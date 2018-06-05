@@ -164,6 +164,8 @@ struct HorovodGlobalState {
   int local_size = 1;
   bool mpi_threads_supported = false;
 
+  // MPI custom data type for float16.
+  MPI_Datatype mpi_float16_t;
 // The CUDA stream used for data transfers and within-allreduce operations.
 // A naive implementation would use the TensorFlow StreamExecutor CUDA
 // stream. However, the allreduce and allgather require doing memory copies
@@ -481,6 +483,8 @@ MPI_Datatype GetMPIDataType(const std::shared_ptr<Tensor> tensor) {
     return MPI_INT32_T;
   case HOROVOD_INT64:
     return MPI_INT64_T;
+  case HOROVOD_FLOAT16:
+    return horovod_global.mpi_float16_t;
   case HOROVOD_FLOAT32:
     return MPI_FLOAT;
   case HOROVOD_FLOAT64:
@@ -500,6 +504,8 @@ ncclDataType_t GetNCCLDataType(const std::shared_ptr<Tensor> tensor) {
     return ncclInt32;
   case HOROVOD_INT64:
     return ncclInt64;
+  case HOROVOD_FLOAT16:
+    return ncclFloat16;
   case HOROVOD_FLOAT32:
     return ncclFloat32;
   case HOROVOD_FLOAT64:
@@ -1196,11 +1202,17 @@ void BackgroundThreadLoop(HorovodGlobalState& state) {
   MPI_Comm_rank(local_comm, &local_rank);
   MPI_Comm_size(local_comm, &local_size);
 
+  // Create custom MPI float16 data type.
+  MPI_Datatype mpi_float16_t;
+  MPI_Type_contiguous(2, MPI_BYTE, &mpi_float16_t);
+  MPI_Type_commit(&mpi_float16_t);
+
   state.rank = rank;
   state.local_rank = local_rank;
   state.size = size;
   state.local_size = local_size;
   state.mpi_threads_supported = (provided == MPI_THREAD_MULTIPLE);
+  state.mpi_float16_t = mpi_float16_t;
   state.initialization_done = true;
 
   // Open the timeline file on coordinator.
@@ -1466,6 +1478,8 @@ void BackgroundThreadLoop(HorovodGlobalState& state) {
     (*it)(SHUT_DOWN_ERROR);
   }
 
+  // Free custom MPI data type.
+  MPI_Type_free(&state.mpi_float16_t);
   MPI_Finalize();
 }
 
