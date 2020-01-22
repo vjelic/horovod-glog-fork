@@ -23,7 +23,19 @@ RUN apt-get update && apt-get install -y --allow-downgrades --allow-change-held-
         libjpeg-dev \
         libpng-dev \
         rocm-dev \
+        rocm-libs \
+        rocm-utils \
+        rocfft \
+        miopen-hip \
+        miopengemm \
+        rocblas \
+        hipblas \
+        hipcub \
+        rocrand \
         rccl \
+        rocm-cmake \
+        rocm-profiler \
+        cxlactivitylogger \
         python${PYTHON_VERSION} \
         python${PYTHON_VERSION}-dev \
         librdmacm1 \
@@ -33,7 +45,8 @@ RUN apt-get update && apt-get install -y --allow-downgrades --allow-change-held-
 RUN if [[ "${PYTHON_VERSION}" == "3.6" ]]; then \
         apt-get install -y python${PYTHON_VERSION}-distutils; \
     fi
-RUN ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python
+# ROCm container might have already installed python
+RUN rm -f /usr/bin/python && ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python
 
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
@@ -42,7 +55,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
 # Install TensorFlow and Keras
 RUN pip install future typing
 RUN pip install numpy \
-        tensorflow-gpu==${TENSORFLOW_VERSION} \
+        tensorflow-rocm==${TENSORFLOW_VERSION} \
         keras \
         h5py
 
@@ -59,8 +72,10 @@ RUN mkdir /tmp/openmpi && \
     rm -rf /tmp/openmpi
 
 # Install Horovod, temporarily using CUDA stubs
-RUN HOROVOD_GPU=ROCM HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_GPU_BROADCAST=NCCL HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 HOROVOD_WITHOUT_MXNET=1 \
-         pip install --no-cache-dir horovod && \
+RUN cd ~ && \
+    git clone --recursive https://github.com/horovod/horovod && cd horovod && \
+    HOROVOD_GPU=ROCM HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_GPU_BROADCAST=NCCL HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 HOROVOD_WITHOUT_MXNET=1 \
+         python setup.py install && \
     ldconfig
 
 # Install OpenSSH for MPI to communicate between containers
