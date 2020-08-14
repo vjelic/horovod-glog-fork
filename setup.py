@@ -435,7 +435,7 @@ def get_cuda_dirs(build_ext, cpp_flags):
 def get_rocm_dirs(build_ext, cpp_flags):
     rocm_include_dirs = []
     rocm_lib_dirs = []
-    rocm_libs = ['hip_hcc']
+    rocm_libs = ['amdhip64']
     rocm_macros = [('__HIP_PLATFORM_HCC__',1)]
 
     rocm_path = os.environ.get('HOROVOD_ROCM_HOME', '/opt/rocm')
@@ -809,7 +809,7 @@ def get_common_options(build_ext):
         if have_mpi:
             SOURCES += ['horovod/common/ops/mpi_gpu_operations.cc']
         LIBRARY_DIRS += gpu_lib_dirs
-        LIBRARIES += ['hip_hcc']
+        LIBRARIES += ['amdhip64']
 
     if have_nccl:
         MACROS += [('HAVE_NCCL', '1')]
