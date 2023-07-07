@@ -62,7 +62,7 @@ namespace gpu {
 GpuStreamHandle AsGpuStreamValue(Stream* stream);
 } // namespace stream_executor
 } // namespace gpu
-#include "tensorflow/stream_executor/stream.h"
+#include "tensorflow/compiler/xla/stream_executor/stream.h"
 #endif // HAVE_GPU
 
 #define OMPI_SKIP_MPICXX
@@ -106,7 +106,7 @@ namespace {
 Status ConvertStatus(const common::Status& status) {
   switch (status.type()) {
   case common::OK:
-    return Status::OK();
+    return Status();
   case common::UNKNOWN_ERROR:
     return errors::Unknown(status.reason());
   case common::PRECONDITION_ERROR:
@@ -520,7 +520,7 @@ REGISTER_OP("HorovodAllreduce")
     .Output("sum: T")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->input(0));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform an Allreduce on a tensor. All other processes that do a reduction
@@ -660,7 +660,7 @@ REGISTER_OP("HorovodGroupedAllreduce")
       for (int i = 0; i < c->num_inputs(); ++i) {
           c->set_output(i, c->input(i));
       }
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform an MPI Allreduce on a list tensors. All other processes that do a reduction
@@ -749,7 +749,7 @@ REGISTER_OP("HorovodAllgather")
       TF_RETURN_IF_ERROR(
           c->ReplaceDim(c->input(0), 0, c->UnknownDim(), &output));
       c->set_output(0, output);
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform an Allgather on a tensor. All other processes that do a gather on a
@@ -875,7 +875,7 @@ REGISTER_OP("HorovodGroupedAllgather")
             c->ReplaceDim(c->input(i), 0, c->UnknownDim(), &output));
         c->set_output(i, output);
       }
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform an Allgather on a list tensors. All other processes that do a gather
@@ -973,7 +973,7 @@ REGISTER_OP("HorovodBroadcast")
     .Output("output: T")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->input(0));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform a Broadcast on a tensor. All other processes that do a broadcast
@@ -1005,7 +1005,7 @@ Status GetInputDataTypeFromVariable(OpKernelContext* ctx, int input,
   } else {
     out = BaseType(ctx->input_dtype(input));
   }
-  return Status::OK();
+  return Status();
 }
 
 }
@@ -1325,7 +1325,7 @@ REGISTER_OP("HorovodReducescatter")
       TF_RETURN_IF_ERROR(
           c->ReplaceDim(c->input(0), 0, c->UnknownDim(), &output));
       c->set_output(0, output);
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform a Reducescatter on a tensor. All other processes that do a
@@ -1454,7 +1454,7 @@ REGISTER_OP("HorovodGroupedReducescatter")
             c->ReplaceDim(c->input(i), 0, c->UnknownDim(), &output));
         c->set_output(i, output);
       }
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform a Reducescatter on a list tensors. All other processes that do a reduce
@@ -1530,7 +1530,7 @@ REGISTER_OP("HorovodJoin")
     .Output("output: int32")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform a join on a tensor.
@@ -1579,7 +1579,7 @@ REGISTER_OP("HorovodSize")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Returns the number of Horovod processes. If process_set_id > 0, limit the
@@ -1604,7 +1604,7 @@ REGISTER_OP("HorovodProcessSetIncluded")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Returns 0 or 1 depending on whether the current process is
@@ -1646,7 +1646,7 @@ REGISTER_OP("HorovodLocalSize")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Returns the number of Horovod processes within the node the current process is
@@ -1671,7 +1671,7 @@ REGISTER_OP("HorovodRank")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Returns the Horovod rank of the calling process.
@@ -1694,7 +1694,7 @@ REGISTER_OP("HorovodLocalRank")
     .SetIsStateful()
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Returns the local Horovod rank of the calling process, within the node that it
@@ -1784,7 +1784,7 @@ REGISTER_OP("HorovodAlltoall")
           c->ReplaceDim(c->input(0), 0, c->UnknownDim(), &output));
       c->set_output(0, output);
       c->set_output(1, c->input(1));
-      return Status::OK();
+      return Status();
     })
     .Doc(R"doc(
 Perform an MPI Alltoall on a tensor.
