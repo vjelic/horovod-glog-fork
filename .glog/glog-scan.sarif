@@ -1,0 +1,1185 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-a5ef88c5-0299-4bae-b57b-63fd4060c89b",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nAn \"Unsecured URL\" vulnerability in C++ programming language refers to the situation where a program uses an unsecured HTTP URL for communication, instead of a secured HTTPS URL. This can lead to a variety of security issues, such as Man-in-the-Middle (MitM) attacks, where an attacker can intercept and potentially alter the communication between the client and the server.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, always use secure HTTPS URLs for communication. HTTPS encrypts the data sent between the client and the server, making it much more difficult for an attacker to intercept or alter the communication.\n\n## Source Code Fix Recommendation\n\nIf you are using the `curl` library to make HTTP requests, you can simply replace the unsecured HTTP URL with a secured HTTPS URL. For example, if your code looks like this:\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"http://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\nYou can fix the vulnerability by changing the URL to \"https://www.apache.org\":\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"https://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\n## Library Dependencies\n\nThe above code example requires the `libcurl` library.\n\n## OWASP Resources\n\n- [OWASP Top 10 2017 Category A6 - Security Misconfiguration](https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration)\n\n## Common Weakness Enumeration (CWE)\n"
+              },
+              "properties": {
+                "tags": [
+                  "DS137138"
+                ]
+              }
+            },
+            {
+              "id": "glog-18dbe9bd-bc9a-4f14-aea2-8e081112f4c3",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `memcpy` function in C++ is used to copy a block of memory from one location to another. This function does not check for any buffer overflow condition, which can lead to a vulnerability if the destination buffer is smaller than the source buffer. This can lead to overwriting of adjacent memory and can cause unpredictable behavior of the program, including crashes, data corruption, and code execution.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always ensure that the destination buffer is large enough to hold the data being copied. This can be done by checking the size of the destination buffer before calling `memcpy`. If the destination buffer is not large enough, the program should handle this condition gracefully, for example by allocating a larger buffer or by truncating the data to fit.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix for the vulnerability:\n\n```cpp\nif (affinity_len <= sizeof(affinity_copy)) {\n    memcpy(affinity_copy, affinity, affinity_len);\n} else {\n    // Handle error condition, e.g. by truncating data or allocating a larger buffer\n}\n```\n\n## Library Dependencies\n\nThe `memcpy` function is part of the C standard library, so no additional library dependencies are required.\n\n## References\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-0884883e-d644-4851-b738-2f12265b069e",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `malloc()` function in C is used to dynamically allocate a block of memory. If the size of the memory to be allocated is controlled by the user or can be influenced by an attacker, it can lead to several types of vulnerabilities such as buffer overflow, integer overflow, or even denial of service. \n\nIn the given code snippet, `malloc(total_buffer_len)`, if `total_buffer_len` is not properly validated, it can lead to the aforementioned vulnerabilities.\n\n## Mitigation Advice\n\n1. Always validate the size of the memory to be allocated. It should not be too large to cause a Denial of Service (DoS) by exhausting system memory, and it should not be too small to cause a buffer overflow.\n\n2. Use functions that limit the amount of data written into a buffer such as `strncpy()` instead of `strcpy()`.\n\n3. Consider using modern C++ features like smart pointers (`std::unique_ptr`, `std::shared_ptr`) or container classes (`std::vector`, `std::array`) that manage memory automatically.\n\n## Source Code Fix Recommendation\n\n```c++\n// Check if total_buffer_len is within acceptable range\nif (total_buffer_len > MAX_BUFFER_SIZE || total_buffer_len < MIN_BUFFER_SIZE) {\n    // Handle error\n} else {\n    char* buffer = (char*) malloc(total_buffer_len);\n    if (buffer == NULL) {\n        // Handle error\n    } else {\n        // Use buffer\n        free(buffer);\n    }\n}\n```\n\n## Library Dependencies\n\nThe `malloc()` function is part of the C Standard Library, so no additional libraries are needed.\n\n## References\n\n- [CWE-131: Incorrect Calculation of Buffer Size](https://cwe.mitre.org/data/definitions/131.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS161085"
+                ]
+              }
+            },
+            {
+              "id": "glog-d6296fae-d5a9-4015-b1b5-90df2bef098d",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `strlen()` function in C/C++ is used to calculate the length of a string. However, it can lead to vulnerabilities if not used properly. The function counts the number of characters in a string until it reaches a null character (`'\\0'`). If the string is not null-terminated, `strlen()` will continue reading memory until it encounters a null character, which can lead to buffer overflows, memory corruption, and other undefined behaviors.\n\nIn the provided code snippet, `strlen(affinity)` is a potential vulnerability if `affinity` is not a null-terminated string.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, always ensure that strings are null-terminated before passing them to `strlen()`. Additionally, consider using safer alternatives to `strlen()`, such as `strnlen()`, which takes a maximum length parameter and will not read past this length, even if it does not encounter a null character.\n\n## Source Code Fix Recommendation\n\nAssuming `affinity` is a character array, you can ensure it is null-terminated by initializing it with a null character:\n\n```cpp\nchar affinity[MAX_AFFINITY_LENGTH] = {'\\0'};\n```\n\nOr, if `affinity` is a string that you are reading in, you can manually null-terminate it:\n\n```cpp\naffinity[sizeof(affinity) - 1] = '\\0';\n```\n\nThen, you can safely use `strlen()`:\n\n```cpp\nstrlen(affinity);\n```\n\n## Library Dependencies\n\nThe `strlen()` function is part of the C standard library, so no additional libraries are needed.\n\n## References\n\n- [OWASP C/C++ Vulnerabilities](https://owasp.org/www-pdf-archive/OWASP_SCP_Quick_Reference_Guide_v2.pdf)\n- [CWE-126: Buffer Over-read](https://cwe.mitre.org/data/definitions/126.html)\n\nPlease note that the links provided are accessible to anonymous users at the time of writing this report."
+              },
+              "properties": {
+                "tags": [
+                  "DS140021"
+                ]
+              }
+            },
+            {
+              "id": "glog-7ddb79a1-079f-4918-aeb6-2a7cae358a0e",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nAn \"Unsecured URL\" vulnerability in C++ programming language refers to the situation where a program uses an unsecured HTTP URL for communication, instead of a secured HTTPS URL. This can lead to a variety of security issues, such as Man-in-the-Middle (MitM) attacks, where an attacker can intercept and potentially alter the communication between the client and the server.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, always use secure HTTPS URLs for communication. HTTPS encrypts the data sent between the client and the server, making it much more difficult for an attacker to intercept or alter the communication.\n\n## Source Code Fix Recommendation\n\nIf you are using the `curl` library to make HTTP requests, you can simply replace the unsecured HTTP URL with a secured HTTPS URL. For example, if your code looks like this:\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"http://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\nYou can fix the vulnerability by changing the URL to \"https://www.apache.org\":\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"https://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\n## Library Dependencies\n\nThe above code example requires the `libcurl` library.\n\n## OWASP Resources\n\n- [OWASP Top 10 2017 Category A6 - Security Misconfiguration](https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration)\n\n## Common Weakness Enumeration (CWE)\n"
+              },
+              "properties": {
+                "tags": [
+                  "DS137138"
+                ]
+              }
+            },
+            {
+              "id": "glog-813b5790-a675-4115-b525-b0b82f6d8e3d",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `memcpy` function in C++ is used to copy a block of memory from one location to another. This function is vulnerable to buffer overflow attacks if the size of the data being copied is larger than the size of the destination buffer. In the provided code snippet, if `buffer_len` is larger than the size of `buffer_data`, it can lead to a buffer overflow vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always ensure that the size of the data being copied does not exceed the size of the destination buffer. This can be done by checking the size of the data and the size of the buffer before calling `memcpy`.\n\n## Source Code Fix Recommendation\n\nHere is a recommended fix for the provided code snippet:\n\n```cpp\nsize_t data_size = first_entry.tensor->size();\nif (buffer_len <= data_size) {\n    memcpy(buffer_data, (void*)first_entry.tensor->data(), buffer_len);\n} else {\n    // Handle error\n}\n```\n\n## Library Dependencies\n\nThe provided code snippet requires the following library dependencies:\n\n- `<cstring>`: This library provides the `memcpy` function.\n- `<cstddef>`: This library provides the `size_t` type.\n\n## OWASP Resources\n\n- [Buffer Overflow](https://owasp.org/www-community/vulnerabilities/Buffer_Overflow)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that these links are valid and active at the time of writing this report."
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-a22ffdbf-020a-4142-9d8f-951b63780b4b",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `memcpy` function in C++ is used to copy a block of memory from one location to another. This function does not check the size of the destination buffer, which can lead to buffer overflow if the source data is larger than the destination buffer. This is a common vulnerability in C++ programming, and can lead to serious security issues such as data corruption, system crashes, and code execution.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always ensure that the destination buffer is large enough to hold the source data. This can be done by checking the size of the source data and the size of the destination buffer before calling `memcpy`.\n\n## Source Code Fix Recommendation\n\nHere is a recommended fix for the specific vulnerability sink:\n\n```cpp\nif (entry_size <= sizeof(buffer_data_at_offset)) {\n    memcpy(buffer_data_at_offset, tensor_data_at_offset, entry_size);\n} else {\n    // Handle error\n}\n```\n\nIn this code, we first check if the size of the source data (`entry_size`) is less than or equal to the size of the destination buffer (`sizeof(buffer_data_at_offset)`). If it is, we proceed with the `memcpy`. If it is not, we handle the error in a way that is appropriate for the specific application.\n\n## Library Dependencies\n\nThe `memcpy` function is part of the C standard library, so no additional library dependencies are required for the code example to execute properly.\n\n## OWASP Resources\n\n- [Buffer Overflow](https://owasp.org/www-community/vulnerabilities/Buffer_Overflow)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-5212d0f3-bab9-417a-9d41-a4cfbed205cc",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe vulnerability in question is related to the `memcpy` function in C++. This function is used to copy a block of memory from one location to another. The vulnerability arises when the size of the destination buffer is less than the size of the source buffer. This can lead to a buffer overflow, which can cause the program to crash or, in some cases, allow an attacker to execute arbitrary code.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always ensure that the destination buffer is large enough to hold the data being copied. This can be done by checking the size of the destination buffer before calling `memcpy`. If the destination buffer is not large enough, you should either increase its size or reduce the amount of data being copied.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix for the vulnerability:\n\n```cpp\nsize_t size = (size_t); // size of data to be copied\nif (size <= sizeof(buffer_data_at_offset)) {\n    memcpy(buffer_data_at_offset, e.tensor->data(), size);\n} else {\n    // handle error\n}\n```\n\nIn this code, we first check if the size of the data to be copied is less than or equal to the size of the destination buffer. If it is, we proceed with the `memcpy`. If it is not, we handle the error in an appropriate manner.\n\n## Library Dependencies\n\nThe `memcpy` function is part of the C standard library, so no additional library dependencies are required for the code example.\n\n## OWASP and CWE Links\n\n- [OWASP C++ Secure Coding Practices](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that these links are subject to change and may not always be accessible."
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-23a57d3b-84f9-44b6-8775-17ef08322263",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe vulnerability in question is related to the `memcpy` function in C++. This function is used to copy a block of memory from one location to another. The vulnerability arises when the size of the destination buffer is less than the size of the source buffer. This can lead to a buffer overflow, which can cause the program to crash or, in some cases, allow an attacker to execute arbitrary code.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always ensure that the destination buffer is large enough to hold the data being copied. This can be done by checking the size of the destination buffer before calling `memcpy`. If the destination buffer is not large enough, you should either increase its size or reduce the amount of data being copied.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix for the vulnerability:\n\n```cpp\nsize_t size = (size_t); // size of data to be copied\nif (size <= sizeof(buffer_data_at_offset)) {\n    memcpy(buffer_data_at_offset, e.tensor->data(), size);\n} else {\n    // handle error\n}\n```\n\nIn this code, we first check if the size of the data to be copied is less than or equal to the size of the destination buffer. If it is, we proceed with the `memcpy`. If it is not, we handle the error in an appropriate manner.\n\n## Library Dependencies\n\nThe `memcpy` function is part of the C standard library, so no additional library dependencies are required for the code example.\n\n## OWASP and CWE Links\n\n- [OWASP C++ Secure Coding Practices](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that these links are subject to change and may not always be accessible."
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-028deda1-5147-4d4a-a438-c0cf36a01427",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nAn \"Unsecured URL\" vulnerability in C++ programming language refers to the situation where a program uses an unsecured HTTP URL for communication, instead of a secured HTTPS URL. This can lead to a variety of security issues, such as Man-in-the-Middle (MitM) attacks, where an attacker can intercept and potentially alter the communication between the client and the server.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, always use secure HTTPS URLs for communication. HTTPS encrypts the data sent between the client and the server, making it much more difficult for an attacker to intercept or alter the communication.\n\n## Source Code Fix Recommendation\n\nIf you are using the `curl` library to make HTTP requests, you can simply replace the unsecured HTTP URL with a secured HTTPS URL. For example, if your code looks like this:\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"http://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\nYou can fix the vulnerability by changing the URL to \"https://www.apache.org\":\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"https://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\n## Library Dependencies\n\nThe above code example requires the `libcurl` library.\n\n## OWASP Resources\n\n- [OWASP Top 10 2017 Category A6 - Security Misconfiguration](https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration)\n\n## Common Weakness Enumeration (CWE)\n"
+              },
+              "properties": {
+                "tags": [
+                  "DS137138"
+                ]
+              }
+            },
+            {
+              "id": "glog-a782a989-d749-44d9-b11f-21c54055980b",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nLeaving debug code in production environments is a common vulnerability in C++ programming. Debug code often includes verbose logging, assertions, or test hooks that are useful during development but can expose sensitive information, degrade performance, or introduce security risks when left in production. Specifically, debug code might inadvertently expose internal logic or data structures, making it easier for attackers to exploit the system.\n\n### General Mitigation Advice\n\n1. **Code Review**: Conduct thorough code reviews to identify and remove debug code before deploying to production.\n2. **Conditional Compilation**: Use preprocessor directives to include debug code only in non-production builds.\n3. **Logging Levels**: Implement logging levels to control the verbosity of logs in production.\n4. **Automated Tools**: Use static analysis tools to detect and flag debug code.\n\n### Source Code Fix Recommendation\n\n#### Vulnerability Sink: `localhost`\n\nIn this example, debug code is used to bind a server to `localhost` for testing purposes. This should be removed or conditionally compiled out in production.\n\n```cpp\n#include <iostream>\n#include <boost/asio.hpp>\n\nint main() {\n    try {\n        boost::asio::io_context io_context;\n\n        // Debug code: Bind to localhost for testing\n        #ifdef DEBUG\n        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(\"127.0.0.1\"), 8080);\n        #else\n        // Production code: Bind to all interfaces\n        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 8080);\n        #endif\n\n        boost::asio::ip::tcp::acceptor acceptor(io_context, endpoint);\n        std::cout << \"Server is running...\" << std::endl;\n        acceptor.listen();\n    } catch (std::exception& e) {\n        std::cerr << \"Exception: \" << e.what() << std::endl;\n    }\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\n- Boost.Asio: A cross-platform C++ library for network and low-level I/O programming.\n\n### OWASP Resources\n\n- [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-489: Leftover Debug Code](https://cwe.mitre.org/data/definitions/489.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS162092"
+                ]
+              }
+            },
+            {
+              "id": "glog-321a1f8d-e137-4da3-a0b5-ab11858ac6ed",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `malloc` function in C++ is used to dynamically allocate memory at runtime. The vulnerability arises when the size of the memory to be allocated is not properly validated or controlled, leading to potential buffer overflow, memory corruption, or other related issues. This can be exploited by an attacker to execute arbitrary code, cause a denial of service, or gain unauthorized access to data.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n1. Always validate and control the size of the memory to be allocated.\n2. Use functions that limit the amount of data written to the memory, such as `strncpy` instead of `strcpy`.\n3. Regularly use static code analysis tools to detect potential vulnerabilities.\n4. Implement proper error handling for `malloc` and check if it returns a NULL pointer, which indicates that the memory allocation failed.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix for the vulnerability:\n\n```cpp\n#include <stdlib.h>\n\n// Check if the size is valid\nif (current_host_buffer_length > MAX_BUFFER_SIZE || current_host_buffer_length < 0) {\n    // Handle error\n    return;\n}\n\n// Allocate memory\nchar* buffer = (char*) malloc(current_host_buffer_length);\n\n// Check if the memory allocation was successful\nif (buffer == NULL) {\n    // Handle error\n    return;\n}\n\n// Use the buffer\n// ...\n\n// Free the memory\nfree(buffer);\n```\n\nIn this example, `MAX_BUFFER_SIZE` is a predefined constant that represents the maximum allowed buffer size.\n\n## Library Dependencies\n\nThe code example requires the `stdlib.h` library for the `malloc` and `free` functions.\n\n## References\n\n- [OWASP C/C++ Vulnerability Guide](https://owasp.org/www-pdf-archive/OWASP_SCP_Quick_Reference_Guide_v2.pdf)\n\n## Matching CWE\n\n- [CWE-131: Incorrect Calculation of Buffer Size](https://cwe.mitre.org/data/definitions/131.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS161085"
+                ]
+              }
+            },
+            {
+              "id": "glog-3287d3d6-139a-4f4c-a69f-9cec3b72c113",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe vulnerability in question is related to the `memcpy` function in C++. This function is used to copy a block of memory from one location to another. The vulnerability arises when the size of the destination buffer is less than the size of the source buffer. This can lead to buffer overflow, which can cause the program to crash or, in worst-case scenarios, allow an attacker to execute arbitrary code.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always ensure that the destination buffer is large enough to hold the data being copied from the source buffer. This can be done by checking the size of the destination buffer before calling the `memcpy` function. Additionally, consider using safer alternatives to `memcpy`, such as `strncpy` or `memcpy_s`, which include a length parameter to prevent buffer overflow.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix for the vulnerability:\n\n```cpp\nsize_t buffer_size = sizeof(e.output->data());\nif (buffer_data_at_offset <= buffer_size) {\n    memcpy((void*)e.output->data(), buffer_data_at_offset, buffer_data_at_offset);\n} else {\n    // Handle error\n}\n```\n\nIn this code, we first check if the size of the data to be copied is less than or equal to the size of the destination buffer. If it is, we proceed with the `memcpy` operation. If it is not, we handle the error in an appropriate manner.\n\n## Library Dependencies\n\nThe `memcpy` function is part of the C standard library, so no additional libraries are needed for this code to execute properly.\n\n## OWASP Resources\n\n- [Buffer Overflow](https://owasp.org/www-community/vulnerabilities/Buffer_Overflow)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that the links provided are active and accessible to anonymous users at the time of writing this report."
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-ae2cd714-4ab5-4a3b-81be-21e835349a3d",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nAn \"Unsecured URL\" vulnerability in C++ programming language refers to the situation where a program uses an unsecured HTTP URL for communication, instead of a secured HTTPS URL. This can lead to a variety of security issues, such as Man-in-the-Middle (MitM) attacks, where an attacker can intercept and potentially alter the communication between the client and the server.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, always use secure HTTPS URLs for communication. HTTPS encrypts the data sent between the client and the server, making it much more difficult for an attacker to intercept or alter the communication.\n\n## Source Code Fix Recommendation\n\nIf you are using the `curl` library to make HTTP requests, you can simply replace the unsecured HTTP URL with a secured HTTPS URL. For example, if your code looks like this:\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"http://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\nYou can fix the vulnerability by changing the URL to \"https://www.apache.org\":\n\n```cpp\n#include <curl/curl.h>\n\nint main() {\n    CURL *curl;\n    CURLcode res;\n\n    curl_global_init(CURL_GLOBAL_DEFAULT);\n\n    curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"https://www.apache.org\");\n        /* Perform the request, res will get the return code */\n        res = curl_easy_perform(curl);\n        /* Check for errors */\n        if(res != CURLE_OK)\n            fprintf(stderr, \"curl_easy_perform() failed: %s\\n\",\n                    curl_easy_strerror(res));\n        /* always cleanup */\n        curl_easy_cleanup(curl);\n    }\n\n    curl_global_cleanup();\n\n    return 0;\n}\n```\n\n## Library Dependencies\n\nThe above code example requires the `libcurl` library.\n\n## OWASP Resources\n\n- [OWASP Top 10 2017 Category A6 - Security Misconfiguration](https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration)\n\n## Common Weakness Enumeration (CWE)\n"
+              },
+              "properties": {
+                "tags": [
+                  "DS137138"
+                ]
+              }
+            },
+            {
+              "id": "glog-4e1f0b0f-a8fd-434a-ad77-b82855f78e5d",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe `memcpy` function in C++ is used to copy a block of memory from one location to another. This function does not check for the size of the destination buffer, which can lead to buffer overflow if the source data is larger than the destination buffer. This is a common vulnerability in C++ programming that can lead to serious security issues such as code execution, denial of service, or information disclosure.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to use functions that check the size of the destination buffer such as `strncpy` or `memcpy_s` (in C11). Also, always ensure that the destination buffer is large enough to hold the source data before copying.\n\n## Source Code Fix Recommendation\n\nReplace the `memcpy` function with `memcpy_s` function which checks the size of the destination buffer. Here is the fixed code:\n\n```cpp\nif(entry_size <= e.output->size() - entry_offset) {\n    memcpy_s((uint8_t*)e.output->data() + entry_offset, e.output->size() - entry_offset, buffer_data_at_offset, entry_size);\n} else {\n    // Handle error\n}\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- `<cstring>`: This library is required for the `memcpy` function.\n\n## OWASP Resources\n\n- [OWASP C++ Secure Coding Practices](https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n\nPlease note that the links provided are valid and active for anonymous users at the time of writing this report."
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-a5ef88c5-0299-4bae-b57b-63fd4060c89b",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Unsecured URL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/common.cc"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 7,
+                  "endLine": 8,
+                  "endColumn": 28,
+                  "charOffset": 308,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "http://www.apache.org",
+                    "rendered": {
+                      "text": "http://www.apache.org",
+                      "markdown": "`http://www.apache.org`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "An HTTP-based URL without TLS was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/common.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 308,
+                        "charLength": 21
+                      },
+                      "insertedContent": {
+                        "text": "https://www.apache.org"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Moderate",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "ThreatModel.Integration.HTTP"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-18dbe9bd-bc9a-4f14-aea2-8e081112f4c3",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/common.cc"
+                },
+                "region": {
+                  "startLine": 157,
+                  "startColumn": 2,
+                  "endLine": 157,
+                  "endColumn": 47,
+                  "charOffset": 4008,
+                  "charLength": 45,
+                  "snippet": {
+                    "text": "memcpy(affinity_copy, affinity, affinity_len)",
+                    "rendered": {
+                      "text": "memcpy(affinity_copy, affinity, affinity_len)",
+                      "markdown": "`memcpy(affinity_copy, affinity, affinity_len)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/common.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 4008,
+                        "charLength": 45
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(affinity_copy, <size of affinity_copy>,  affinity,  affinity_len)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-0884883e-d644-4851-b738-2f12265b069e",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (malloc)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/nccl_operations.cc"
+                },
+                "region": {
+                  "startLine": 409,
+                  "startColumn": 34,
+                  "endLine": 409,
+                  "endColumn": 58,
+                  "charOffset": 15778,
+                  "charLength": 24,
+                  "snippet": {
+                    "text": "malloc(total_buffer_len)",
+                    "rendered": {
+                      "text": "malloc(total_buffer_len)",
+                      "markdown": "`malloc(total_buffer_len)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If the value provided to malloc is the result of unsafe integer math, it can result in an exploitable condition. "
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/nccl_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 15778,
+                        "charLength": 24
+                      },
+                      "insertedContent": {
+                        "text": "calloc(<number of elements>, <size of each element>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-d6296fae-d5a9-4015-b1b5-90df2bef098d",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (strlen)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/common.cc"
+                },
+                "region": {
+                  "startLine": 153,
+                  "startColumn": 24,
+                  "endLine": 153,
+                  "endColumn": 40,
+                  "charOffset": 3851,
+                  "charLength": 16,
+                  "snippet": {
+                    "text": "strlen(affinity)",
+                    "rendered": {
+                      "text": "strlen(affinity)",
+                      "markdown": "`strlen(affinity)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/common.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 3851,
+                        "charLength": 16
+                      },
+                      "insertedContent": {
+                        "text": "strlen_s(affinity, <size of affinity>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/common.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 3851,
+                        "charLength": 16
+                      },
+                      "insertedContent": {
+                        "text": "strnlen(affinity, <size of affinity>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-7ddb79a1-079f-4918-aeb6-2a7cae358a0e",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Unsecured URL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/adasum_mpi_operations.cc"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 7,
+                  "endLine": 7,
+                  "endColumn": 28,
+                  "charOffset": 241,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "http://www.apache.org",
+                    "rendered": {
+                      "text": "http://www.apache.org",
+                      "markdown": "`http://www.apache.org`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "An HTTP-based URL without TLS was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/adasum_mpi_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 241,
+                        "charLength": 21
+                      },
+                      "insertedContent": {
+                        "text": "https://www.apache.org"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Moderate",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "ThreatModel.Integration.HTTP"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-813b5790-a675-4115-b525-b0b82f6d8e3d",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/adasum_mpi_operations.cc"
+                },
+                "region": {
+                  "startLine": 59,
+                  "startColumn": 11,
+                  "endLine": 59,
+                  "endColumn": 77,
+                  "charOffset": 2235,
+                  "charLength": 66,
+                  "snippet": {
+                    "text": "memcpy(buffer_data, (void*)first_entry.tensor->data(), buffer_len)",
+                    "rendered": {
+                      "text": "memcpy(buffer_data, (void*)first_entry.tensor->data(), buffer_len)",
+                      "markdown": "`memcpy(buffer_data, (void*)first_entry.tensor->data(), buffer_len)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/adasum_mpi_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2235,
+                        "charLength": 66
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(buffer_data, <size of buffer_data>,  (void*)first_entry.tensor->data(),  buffer_len)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-a22ffdbf-020a-4142-9d8f-951b63780b4b",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 409,
+                  "startColumn": 7,
+                  "endLine": 409,
+                  "endColumn": 71,
+                  "charOffset": 15601,
+                  "charLength": 64,
+                  "snippet": {
+                    "text": "memcpy(buffer_data_at_offset, tensor_data_at_offset, entry_size)",
+                    "rendered": {
+                      "text": "memcpy(buffer_data_at_offset, tensor_data_at_offset, entry_size)",
+                      "markdown": "`memcpy(buffer_data_at_offset, tensor_data_at_offset, entry_size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 15601,
+                        "charLength": 64
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(buffer_data_at_offset, <size of buffer_data_at_offset>,  tensor_data_at_offset,  entry_size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-5212d0f3-bab9-417a-9d41-a4cfbed205cc",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 280,
+                  "startColumn": 7,
+                  "endLine": 281,
+                  "endColumn": 22,
+                  "charOffset": 10738,
+                  "charLength": 70,
+                  "snippet": {
+                    "text": "memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)",
+                    "rendered": {
+                      "text": "memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)",
+                      "markdown": "`memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 10738,
+                        "charLength": 70
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(buffer_data_at_offset, <size of buffer_data_at_offset>,  e.tensor->data(), \n              (size_t)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-23a57d3b-84f9-44b6-8775-17ef08322263",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 103,
+                  "startColumn": 7,
+                  "endLine": 104,
+                  "endColumn": 22,
+                  "charOffset": 3606,
+                  "charLength": 70,
+                  "snippet": {
+                    "text": "memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)",
+                    "rendered": {
+                      "text": "memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)",
+                      "markdown": "`memcpy(buffer_data_at_offset, e.tensor->data(),\n              (size_t)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 3606,
+                        "charLength": 70
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(buffer_data_at_offset, <size of buffer_data_at_offset>,  e.tensor->data(), \n              (size_t)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-028deda1-5147-4d4a-a438-c0cf36a01427",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Unsecured URL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 7,
+                  "endLine": 9,
+                  "endColumn": 28,
+                  "charOffset": 392,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "http://www.apache.org",
+                    "rendered": {
+                      "text": "http://www.apache.org",
+                      "markdown": "`http://www.apache.org`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "An HTTP-based URL without TLS was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 392,
+                        "charLength": 21
+                      },
+                      "insertedContent": {
+                        "text": "https://www.apache.org"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Moderate",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "ThreatModel.Integration.HTTP"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-a782a989-d749-44d9-b11f-21c54055980b",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Avoid Leaving Debug Code in Production"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/gloo/gloo_context.cc"
+                },
+                "region": {
+                  "startLine": 151,
+                  "startColumn": 73,
+                  "endLine": 151,
+                  "endColumn": 82,
+                  "charOffset": 4877,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "localhost",
+                    "rendered": {
+                      "text": "localhost",
+                      "markdown": "`localhost`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "ManualReview",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Hygiene.Network.AccessingLocalhost"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-321a1f8d-e137-4da3-a0b5-ab11858ac6ed",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (malloc)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/adasum_gpu_operations.cc"
+                },
+                "region": {
+                  "startLine": 31,
+                  "startColumn": 42,
+                  "endLine": 31,
+                  "endColumn": 76,
+                  "charOffset": 1407,
+                  "charLength": 34,
+                  "snippet": {
+                    "text": "malloc(current_host_buffer_length)",
+                    "rendered": {
+                      "text": "malloc(current_host_buffer_length)",
+                      "markdown": "`malloc(current_host_buffer_length)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If the value provided to malloc is the result of unsafe integer math, it can result in an exploitable condition. "
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/adasum_gpu_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 1407,
+                        "charLength": 34
+                      },
+                      "insertedContent": {
+                        "text": "calloc(<number of elements>, <size of each element>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-3287d3d6-139a-4f4c-a69f-9cec3b72c113",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 414,
+                  "startColumn": 7,
+                  "endLine": 415,
+                  "endColumn": 22,
+                  "charOffset": 15789,
+                  "charLength": 77,
+                  "snippet": {
+                    "text": "memcpy((void*)e.output->data(), buffer_data_at_offset,\n              (size_t)",
+                    "rendered": {
+                      "text": "memcpy((void*)e.output->data(), buffer_data_at_offset,\n              (size_t)",
+                      "markdown": "`memcpy((void*)e.output->data(), buffer_data_at_offset,\n              (size_t)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 15789,
+                        "charLength": 77
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s((void*)e.output->data(), <size of (void*)e.output->data()>,  buffer_data_at_offset, \n              (size_t)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-ae2cd714-4ab5-4a3b-81be-21e835349a3d",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Unsecured URL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/ddl_operations.cc"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 7,
+                  "endLine": 8,
+                  "endColumn": 28,
+                  "charOffset": 314,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "http://www.apache.org",
+                    "rendered": {
+                      "text": "http://www.apache.org",
+                      "markdown": "`http://www.apache.org`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "An HTTP-based URL without TLS was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/ddl_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 314,
+                        "charLength": 21
+                      },
+                      "insertedContent": {
+                        "text": "https://www.apache.org"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Moderate",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "ThreatModel.Integration.HTTP"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-4e1f0b0f-a8fd-434a-ad77-b82855f78e5d",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Detected Vulnerability in C Function (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "horovod/common/ops/collective_operations.cc"
+                },
+                "region": {
+                  "startLine": 288,
+                  "startColumn": 7,
+                  "endLine": 289,
+                  "endColumn": 48,
+                  "charOffset": 11040,
+                  "charLength": 98,
+                  "snippet": {
+                    "text": "memcpy((uint8_t*)e.output->data() + entry_offset,\n              buffer_data_at_offset, entry_size)",
+                    "rendered": {
+                      "text": "memcpy((uint8_t*)e.output->data() + entry_offset,\n              buffer_data_at_offset, entry_size)",
+                      "markdown": "`memcpy((uint8_t*)e.output->data() + entry_offset,\n              buffer_data_at_offset, entry_size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "horovod/common/ops/collective_operations.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 11040,
+                        "charLength": 98
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s((uint8_t*)e.output->data() + entry_offset, <size of (uint8_t*)e.output->data() + entry_offset>, \n              buffer_data_at_offset,  entry_size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
